@@ -1,51 +1,85 @@
-const zero = document.querySelector("#zero");
-const one = document.querySelector("#one");
-const two = document.querySelector("#two");
-const three = document.querySelector("#three");
-const four = document.querySelector("#four");
-const five = document.querySelector("#five");
-const six = document.querySelector("#six");
-const seven = document.querySelector("#seven");
-const eight = document.querySelector("#eight");
-const nine = document.querySelector("#nine");
-const dot = document.querySelector("#dot");
-const positivNegativ = document.querySelector("#positivNegativ");
-const plusSign = document.querySelector("#add");
-const minusSign = document.querySelector("#subtract");
-const multiplicationSign = document.querySelector("#multiply");
-const divisionSign = document.querySelector("#divide");
-const equalSign = document.querySelector("#equals");
-const del = document.querySelector("#delete");
-const ac = document.querySelector("#ac");
-const percent = document.querySelector("#percent");
 const displayTextActive = document.querySelector("#activeRow");
 const displayTextOlder = document.querySelector("#olderRow");
 const numButtons = document.querySelectorAll("button.num");
 const allButtons = document.querySelectorAll("button");
 
-let num1 = "";
-let num2 = "";
-let operatorID = "";
-let operatorSign = "";
-let activeDisplayString = "";
-let result = "";
+const calculation = {
+  firstNumber: "",
+  secondNumber: "",
+  operator: null,
+};
 
-function operate(num1, num2, operator) {
+function getNum1(event) {
+  calculation.firstNumber += event.target.value;
+  console.log("num1 :" + calculation.firstNumber);
+  displayTextActive.textContent = createDisplayString();
+}
+
+function getNum2(event) {
+  calculation.secondNumber += event.target.value;
+  console.log("num2: " + calculation.secondNumber);
+  displayTextActive.textContent = createDisplayString();
+}
+
+function checkOperator(event) {
+  if (
+    calculation.operator === null &&
+    (event.target.id === "add" ||
+      event.target.id === "subtract" ||
+      event.target.id === "multiply" ||
+      event.target.id === "divide")
+  ) {
+    calculation.operator = event.target.value;
+    console.log("operator :" + calculation.operator);
+    displayTextActive.textContent = createDisplayString();
+  }
+}
+
+function checkSecondOperator(event) {
+  if (calculation.operator !== null && calculation.secondNumber !== "") {
+    if (
+      event.target.id === "add" ||
+      event.target.id === "subtract" ||
+      event.target.id === "multiply" ||
+      event.target.id === "divide"
+    ) {
+      displayTextOlder.textContent = createDisplayString();
+      const result = operate();
+      calculation.firstNumber = result;
+      calculation.secondNumber = "";
+      calculation.operator = event.target.value;
+      displayTextActive.textContent = createDisplayString();
+    }
+  }
+}
+
+function checkEqual(event) {
+  if (
+    event.target.id === "equals" &&
+    calculation.firstNumber !== "" &&
+    calculation.secondNumber !== "" &&
+    calculation.operator !== null
+  ) {
+    const result = operate();
+    console.log("result: " + result);
+    displayTextOlder.textContent = createDisplayString();
+    displayTextActive.textContent = result;
+  }
+}
+
+function operate() {
+  const num1 = Number(calculation.firstNumber);
+  const num2 = Number(calculation.secondNumber);
+  const operator = calculation.operator;
   switch (operator) {
     case "+":
-      add(num1, num2);
-      break;
+      return add(num1, num2);
     case "−":
-      subtract(num1, num2);
-      break;
+      return subtract(num1, num2);
     case "×":
-      multiply(num1, num2);
-      break;
+      return multiply(num1, num2);
     case "÷":
-      divide(num1, num2);
-      break;
-    default:
-    // code block
+      return divide(num1, num2);
   }
 }
 
@@ -65,90 +99,38 @@ function divide(num1, num2) {
   return num1 / num2;
 }
 
-function checkOperator(event) {
-  if (
-    event.target.id === "add" ||
-    event.target.id === "subtract" ||
-    event.target.id === "multiply" ||
-    event.target.id === "divide"
-  ) {
-    operatorID = event.target.id;
-    operatorSign = event.target.value;
-    return true;
-  } else {
-    return false;
+function checkAC(event) {
+  if (event.target.id === "ac") {
+    calculation.firstNumber = "";
+    calculation.secondNumber = "";
+    calculation.operator = null;
+    displayTextActive.textContent = "";
+    displayTextOlder.textContent = "";
+    console.log(
+      `num1: ${calculation.firstNumber}; operator: ${calculation.operator}; num2: ${calculation.secondNumber}`,
+    );
   }
 }
 
-function getNum2(event) {
-  num2 += event.target.value;
-}
-
-function getNum1(event) {
-  num1 += event.target.value;
-}
-
-function runArithmeticOperation() {
-  const intNumber1 = Number(num1);
-  const intNumber2 = Number(num2);
-  switch (operatorID) {
-    case "add":
-      result = add(intNumber1, intNumber2);
-      break;
-    case "subtract":
-      result = subtract(intNumber1, intNumber2);
-      break;
-    case "multiply":
-      result = multiply(intNumber1, intNumber2);
-      break;
-    case "divide":
-      result = divide(intNumber1, num2);
-      break;
-  }
-  return result;
-}
-
-function createDisplayString(num1, operatorSign, num2) {
-  return `${num1}${operatorSign}${num2}`;
+function createDisplayString() {
+  const num1 = calculation.firstNumber !== "" ? calculation.firstNumber : "";
+  const num2 = calculation.secondNumber !== "" ? calculation.secondNumber : "";
+  const operator = calculation.operator !== null ? calculation.operator : "";
+  return `${num1}${operator}${num2}`;
 }
 
 allButtons.forEach((button) => {
   button.addEventListener("click", (event) => {
-    if (checkOperator(event)) {
-      displayTextActive.textContent = createDisplayString(
-        num1,
-        operatorSign,
-        num2,
-      );
-      return;
-    }
+    checkOperator(event);
     if (event.target.classList.contains("num")) {
-      if (operatorSign === "") {
+      if (calculation.operator === null) {
         getNum1(event);
       } else {
         getNum2(event);
       }
-      displayTextActive.textContent = createDisplayString(
-        num1,
-        operatorSign,
-        num2,
-      );
     }
-    if (num1 !== "" && operatorSign !== "" && num2 !== "") {
-      if (event.target.id === "equals") {
-        result = runArithmeticOperation();
-        displayTextOlder.textContent = createDisplayString(
-          num1,
-          operatorSign,
-          num2,
-        );
-        displayTextActive.textContent = result;
-      }
-    }
-
-    console.log("num1 :" + num1);
-    console.log("operator :" + operatorSign);
-    console.log("num2: " + num2);
-    console.log("result: " + result);
+    checkEqual(event);
+    checkSecondOperator(event);
+    checkAC(event);
   });
 });
