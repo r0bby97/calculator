@@ -7,48 +7,78 @@ const calculation = {
   firstNumber: "",
   secondNumber: "",
   operator: null,
+  currentUserInput: "",
+  currentResult: "",
+  resultDisplayed: false,
 };
 
 function getNum1(event) {
-  calculation.firstNumber += event.target.value;
-  console.log("num1 :" + calculation.firstNumber);
+  const countDecimals = calculation.firstNumber.split(".").length - 1;
+  if (
+    countDecimals === 0 &&
+    event.target.id === "dot" &&
+    calculation.firstNumber.charAt(0) !== "."
+  ) {
+    calculation.firstNumber += event.target.value;
+  } else if (event.target.classList.contains("num")) {
+    calculation.firstNumber += event.target.value;
+  }
   displayTextActive.textContent = createDisplayString();
 }
 
 function getNum2(event) {
-  calculation.secondNumber += event.target.value;
-  console.log("num2: " + calculation.secondNumber);
+  const countDecimals = calculation.secondNumber.split(".").length - 1;
+  if (
+    countDecimals === 0 &&
+    event.target.id === "dot" &&
+    calculation.secondNumber.charAt(0) !== "."
+  ) {
+    calculation.secondNumber += event.target.value;
+  } else if (event.target.classList.contains("num")) {
+    calculation.secondNumber += event.target.value;
+  }
   displayTextActive.textContent = createDisplayString();
 }
 
 function checkOperator(event) {
-  if (
-    calculation.operator === null &&
-    (event.target.id === "add" ||
-      event.target.id === "subtract" ||
-      event.target.id === "multiply" ||
-      event.target.id === "divide")
-  ) {
+  const isOperator =
+    event.target.id === "add" ||
+    event.target.id === "subtract" ||
+    event.target.id === "multiply" ||
+    event.target.id === "divide";
+
+  if (calculation.operator === null && isOperator) {
     calculation.operator = event.target.value;
-    console.log("operator :" + calculation.operator);
+    if (calculation.resultDisplayed) {
+      calculation.resultDisplayed = false;
+    }
     displayTextActive.textContent = createDisplayString();
   }
 }
 
 function checkSecondOperator(event) {
+  const isOperator =
+    event.target.id === "add" ||
+    event.target.id === "subtract" ||
+    event.target.id === "multiply" ||
+    event.target.id === "divide";
+
   if (calculation.operator !== null && calculation.secondNumber !== "") {
-    if (
-      event.target.id === "add" ||
-      event.target.id === "subtract" ||
-      event.target.id === "multiply" ||
-      event.target.id === "divide"
-    ) {
+    if (calculation.secondNumber !== "0" && isOperator) {
       displayTextOlder.textContent = createDisplayString();
-      const result = operate();
-      calculation.firstNumber = result;
+      calculation.currentResult = operate();
+      calculation.firstNumber = String(calculation.currentResult);
       calculation.secondNumber = "";
       calculation.operator = event.target.value;
       displayTextActive.textContent = createDisplayString();
+      calculation.resultDisplayed = false;
+    } else if (
+      calculation.secondNumber === "0" &&
+      calculation.operator === "÷" &&
+      isOperator
+    ) {
+      toggleErrorMessage(displayTextActive);
+      calculation.resultDisplayed = false;
     }
   }
 }
@@ -58,18 +88,43 @@ function checkEqual(event) {
     event.target.id === "equals" &&
     calculation.firstNumber !== "" &&
     calculation.secondNumber !== "" &&
+    calculation.secondNumber !== "0" &&
     calculation.operator !== null
   ) {
-    const result = operate();
-    console.log("result: " + result);
+    calculation.currentResult = operate();
     displayTextOlder.textContent = createDisplayString();
-    displayTextActive.textContent = result;
+    displayTextActive.textContent = formatResult(calculation.currentResult);
+    calculation.firstNumber = String(calculation.currentResult);
+    calculation.secondNumber = "";
+    calculation.operator = null;
+    calculation.resultDisplayed = true;
+  } else if (
+    event.target.id === "equals" &&
+    calculation.firstNumber !== "" &&
+    calculation.secondNumber === "0" &&
+    calculation.operator !== null
+  ) {
+    toggleErrorMessage(displayTextActive);
+    calculation.resultDisplayed = true;
+  }
+}
+
+function toggleErrorMessage(element) {
+  element.classList.toggle("errorMessage");
+  if (element.classList.contains("errorMessage")) {
+    element.textContent = "ERROR 404 ;)";
+    calculation.firstNumber = "";
+    calculation.secondNumber = "";
+    calculation.operator = null;
   }
 }
 
 function operate() {
-  const num1 = Number(calculation.firstNumber);
-  const num2 = Number(calculation.secondNumber);
+  const num1 = parseFloat(calculation.firstNumber);
+  const num2 = parseFloat(calculation.secondNumber);
+  console.log(
+    `num1: ${num1} num2: ${num2} typeof(num1): ${typeof num1} typeof(num2): ${typeof num2}`,
+  );
   const operator = calculation.operator;
   switch (operator) {
     case "+":
@@ -81,6 +136,15 @@ function operate() {
     case "÷":
       return divide(num1, num2);
   }
+}
+
+function formatResult(value) {
+   return Math.abs(value) >= 1e9
+    ? value.toExponential(8)
+    : value.toLocaleString("en-US", {
+        useGrouping: false,
+        maximumFractionDigits: 10,
+      });
 }
 
 function add(num1, num2) {
@@ -101,15 +165,18 @@ function divide(num1, num2) {
 
 function checkAC(event) {
   if (event.target.id === "ac") {
-    calculation.firstNumber = "";
-    calculation.secondNumber = "";
-    calculation.operator = null;
-    displayTextActive.textContent = "";
-    displayTextOlder.textContent = "";
-    console.log(
-      `num1: ${calculation.firstNumber}; operator: ${calculation.operator}; num2: ${calculation.secondNumber}`,
-    );
+    clearAll();
   }
+}
+
+function clearAll() {
+  calculation.resultDisplayed = false;
+  calculation.firstNumber = "";
+  calculation.secondNumber = "";
+  calculation.operator = null;
+  displayTextActive.classList.remove("errorMessage");
+  displayTextActive.textContent = "";
+  displayTextOlder.textContent = "";
 }
 
 function createDisplayString() {
@@ -122,15 +189,23 @@ function createDisplayString() {
 allButtons.forEach((button) => {
   button.addEventListener("click", (event) => {
     checkOperator(event);
-    if (event.target.classList.contains("num")) {
-      if (calculation.operator === null) {
-        getNum1(event);
+    if (event.target.classList.contains("num") || event.target.id === "dot") {
+      if (!calculation.resultDisplayed) {
+        if (calculation.operator === null) {
+          getNum1(event);
+        } else {
+          getNum2(event);
+        }
       } else {
-        getNum2(event);
+        clearAll();
+        getNum1(event);
       }
     }
     checkEqual(event);
     checkSecondOperator(event);
     checkAC(event);
+
+    displayTextActive.scrollLeft = displayTextActive.scrollWidth;
+    displayTextOlder.scrollTop = displayTextOlder.scrollHeight;
   });
 });

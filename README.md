@@ -8,53 +8,73 @@ handling, state management, and a calculator-style user interface.
 
 ## Assignment
 
-Build an on-screen calculator that performs one arithmetic operation at a time.
-The project should:
+Build an on-screen calculator that performs basic arithmetic operations and
+handles calculations through an interactive user interface.
+
+The calculator should:
 
 1. Provide separate functions for addition, subtraction, multiplication, and
    division.
-2. Store the first number, the selected operator, and the second number.
-3. Use an `operate()` function to call the correct arithmetic function.
-4. Include number, operator, equals, and clear buttons as well as a display.
-5. Update the stored numbers and display when digit buttons are selected.
-6. Calculate and display the result when the equals button is selected.
-7. Evaluate the current pair of numbers before continuing with another
-   operator. For example, `12 + 7 - 1 =` is evaluated as `(12 + 7) - 1` and
-   produces `18`.
+2. Store the first number, selected operator, and second number.
+3. Use an `operate()` function to execute the selected arithmetic operation.
+4. Update the display as numbers and operators are entered.
+5. Calculate and display results when the equals button is selected.
+6. Support sequential calculations by using the previous result in the next
+   operation.
+7. Handle common calculator edge cases such as decimal input and division by
+   zero.
 
 ## Current Features
 
-- Number input through on-screen buttons from `0` to `9`
-- Storage for the first operand, second operand, and selected operator
+- Number input from `0` to `9`
 - Addition, subtraction, multiplication, and division
+- Central calculation state stored in a JavaScript object
 - An `operate()` function that selects the correct arithmetic operation
-- A display that updates while numbers and operators are entered
+- Separate storage for the first operand, second operand, operator, and result
+- Live display updates while entering calculations
 - A secondary display row that shows the previous operation
-- Calculation of a complete operation with the equals button
-- Sequential calculations that evaluate one pair of numbers at a time
-- Continued calculations using the previous result as the next first operand
-- An `AC` button that clears the stored values and both display rows
-- A calculator interface styled with CSS and Flexbox
+- Sequential calculations without pressing equals between every operation
+- Previous results can be used as the first operand of a new calculation
+- Entering a number after displaying a result starts a new calculation
+- Decimal number input
+- Prevention of multiple decimal points within the same operand
+- Formatting of long decimal results
+- Scientific notation for results greater than or equal to `1e9`
+- Error handling for division by zero
+- `AC` button to reset the complete calculation
+- Automatic display scrolling for long values
+- Styled error messages
+- Calculator interface built with CSS and Flexbox
 
-## Current Calculation Flow
+## Calculation Flow
 
-1. The first digit buttons build the first operand.
-2. An operator button stores the selected operation.
-3. The following digit buttons build the second operand.
-4. Selecting `=` calculates the current operation and displays its result.
-5. Selecting another operator after the second operand first calculates the
-   current operation, then stores the result and new operator for the next one.
+1. Number buttons build the first operand.
+2. Selecting an operator stores the requested arithmetic operation.
+3. Further number input builds the second operand.
+4. Selecting `=` evaluates the current operation and displays the result.
+5. Selecting another operator after entering the second operand evaluates the
+   current operation first and continues with its result.
+6. Selecting a number after a completed calculation clears the previous state
+   and starts a new calculation.
+
+## Result Formatting
+
+Results are formatted to keep long numbers readable within the calculator
+display.
+
+- Decimal results are limited to a maximum of 10 fractional digits.
+- Results greater than or equal to `1e9` are displayed using scientific
+  notation.
 
 ## Planned Features
 
-- Round long decimal results so they fit within the display
-- Replace consecutive operators without running an incomplete calculation
-- Start a new calculation when a digit is selected after displaying a result
-- Display an error message when dividing by zero
-- Enable decimal input and prevent multiple decimal points in one number
-- Implement the delete button
+- Implement the `DEL` button
+- Implement the percentage button
+- Implement the positive/negative button
 - Add keyboard support
-- Implement the remaining percentage and positive/negative buttons
+- Allow an entered operator to be replaced before entering the second operand
+- Improve handling of `0` as the second operand for non-division operations
+- Continue refining calculator edge cases
 
 ## Built With
 
@@ -66,7 +86,9 @@ The project should:
 
 ## Project Status
 
-Work in progress. The calculator completes basic operations and supports
-sequential calculations one pair of numbers at a time. The remaining edge
-cases, special-function buttons, and extra-credit features still need to be
-implemented.
+Work in progress.
+
+The main calculator logic is functional and supports basic arithmetic,
+sequential calculations, decimal input, result formatting, clearing the
+calculator, and division-by-zero error handling. The remaining work focuses on
+the additional calculator controls, keyboard support, and smaller edge cases.

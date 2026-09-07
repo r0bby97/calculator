@@ -32,21 +32,38 @@ body {
     flex-direction: column;
     justify-content: end;
     align-items: end;
+    padding-inline: 18px;
+
 }
 
 .display text {
     font-variant-numeric: tabular-nums;
     line-height: 1;
-    padding: 0.25em 8px;
+    padding-block: 0.25em;
+    padding-inline: 0;
 }
+
 #activeRow {
+    width: 100%;
+    min-width: 0;
+    height: 54px;
+    flex-shrink: 0;
     font-size: 2.25rem;
     font-weight: bold;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 #olderRow {
     font-size: 1.5rem;
-    color: #a1a1a1
+    color: #a1a1a1;
+    width: 100%;
+    min-height: 0;
+    max-height: 232px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    overflow-y: hidden;
 }
 
 .numblock {
@@ -108,4 +125,8 @@ button {
 
 .dark-grey {
     background-color: #2F2F2F;
+}
+
+.errorMessage {
+    color: red;
 }
