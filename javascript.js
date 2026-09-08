@@ -154,6 +154,7 @@ function formatResult(value) {
 }
 
 function removeUnusedDot(numString) {
+  numString = numString.toString();
   if (numString.endsWith(".")) {
     return numString.slice(0, -1);
   }
@@ -197,11 +198,9 @@ function checkBackspace(event) {
   if (event.target.id !== "delete") {
     return;
   }
-
   if (calculation.resultLocked && calculation.operator === null) {
     return;
   }
-
   if (calculation.operator !== null && calculation.secondNumber !== "") {
     calculation.secondNumber = calculation.secondNumber.slice(0, -1);
   } else if (calculation.operator !== null) {
@@ -209,8 +208,22 @@ function checkBackspace(event) {
   } else if (!calculation.resultLocked) {
     calculation.firstNumber = calculation.firstNumber.slice(0, -1);
   }
-
   displayTextActive.textContent = createDisplayString();
+}
+
+function checkPositiveNegative(event) {
+  if (event.target.id !== "positiveNegative") {
+    return;
+  }
+  if (calculation.secondNumber !== "") {
+    calculation.secondNumber *= -1;
+    displayTextActive.textContent = createDisplayString();
+    return;
+  } else if (calculation.firstNumber !== "") {
+    calculation.firstNumber *= -1;
+    displayTextActive.textContent = createDisplayString();
+    return;
+  }
 }
 
 function clearAll() {
@@ -250,8 +263,74 @@ allButtons.forEach((button) => {
     checkSecondOperator(event);
     checkAC(event);
     checkBackspace(event);
-
+    checkPositiveNegative(event);
     displayTextActive.scrollLeft = displayTextActive.scrollWidth;
     displayTextOlder.scrollTop = displayTextOlder.scrollHeight;
   });
+});
+
+document.addEventListener("keydown", (event) => {
+  const key = event.key;
+  switch (key) {
+    case "0":
+      document.getElementById("zero").click();
+      break;
+    case "1":
+      document.getElementById("one").click();
+      break;
+    case "2":
+      document.getElementById("two").click();
+      break;
+    case "3":
+      document.getElementById("three").click();
+      break;
+    case "4":
+      document.getElementById("four").click();
+      break;
+    case "5":
+      document.getElementById("five").click();
+      break;
+    case "6":
+      document.getElementById("six").click();
+      break;
+    case "7":
+      document.getElementById("seven").click();
+      break;
+    case "8":
+      document.getElementById("eight").click();
+      break;
+    case "9":
+      document.getElementById("nine").click();
+      break;
+    case ".":
+      document.getElementById("dot").click();
+      break;
+    case "+":
+      document.getElementById("add").click();
+      break;
+    case "-":
+      document.getElementById("subtract").click();
+      break;
+    case "*":
+      document.getElementById("multiply").click();
+      break;
+    case "/":
+      document.getElementById("divide").click();
+      break;
+    case "%":
+      document.getElementById("percent").click();
+      break;
+    case "=":
+      document.getElementById("equals").click();
+      break;
+    case "Backspace":
+      document.getElementById("delete").click();
+      break;
+    case "Delete":
+      document.getElementById("ac").click();
+      break;
+    case "F9":
+      document.getElementById("positiveNegative").click();
+      break;
+  }
 });

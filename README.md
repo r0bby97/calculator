@@ -1,12 +1,11 @@
-```md
 # Calculator
 
 A browser-based calculator created as part of
 [The Odin Project Foundations course](https://www.theodinproject.com/lessons/foundations-calculator).
 
 The project combines JavaScript fundamentals with DOM manipulation, event
-handling, state management, input validation, and a calculator-style user
-interface.
+handling, state management, input validation, keyboard interaction, and a
+calculator-style user interface.
 
 ## Assignment
 
@@ -49,8 +48,11 @@ The calculator should:
 - `AC` button for resetting the complete calculator state
 - `DEL` button for deleting the most recent number or operator input
 - Protection against editing a completed result with `DEL`
+- Positive/negative (`±`) button for switching the sign of the current number
+- Keyboard support for calculator input
 - Automatic display scrolling for long calculations
 - Separate styling for current calculations, previous operations, and errors
+- Custom calculator favicon
 - Calculator interface built with CSS and Flexbox
 
 ## Calculation Flow
@@ -63,6 +65,8 @@ The calculator should:
    current operation first and continues with its result.
 6. Selecting a number after a completed calculation clears the previous state
    and starts a new calculation.
+7. The positive/negative button changes the sign of the currently active
+   operand.
 
 ## Input Handling
 
@@ -74,6 +78,24 @@ The calculator cleans user input before performing calculations.
 - A trailing decimal point is removed before an operation is evaluated.
 - The `DEL` button removes the latest part of the current input.
 - Completed results are locked to prevent accidental deletion.
+- The `±` button switches the sign of the current operand.
+
+## Keyboard Controls
+
+The calculator can also be controlled with the keyboard.
+
+| Key | Action |
+| --- | --- |
+| `0` – `9` | Enter numbers |
+| `.` | Decimal point |
+| `+` | Addition |
+| `-` | Subtraction |
+| `*` | Multiplication |
+| `/` | Division |
+| `=` | Calculate result |
+| `Backspace` | Delete last input |
+| `Delete` | Clear calculator |
+| `F9` | Toggle positive/negative |
 
 ## Result Formatting
 
@@ -93,10 +115,8 @@ message and resets the stored operands and operator.
 
 ## Remaining Features
 
-Before completing the project, the following features still need to be added:
+Before completing the project, the following feature still needs to be added:
 
-- Keyboard support
-- Positive/negative (`±`) button functionality
 - Percentage (`%`) button functionality
 
 ## Built With
@@ -107,14 +127,17 @@ Before completing the project, the following features still need to be added:
 - DOM manipulation
 - Flexbox
 
+## Credits
+
+- Calculator favicon provided by [Icons8](https://icons8.com/)
+
 ## Project Status
 
 Work in progress.
 
-The core calculator functionality is complete, including arithmetic operations,
+The main calculator functionality is complete, including arithmetic operations,
 sequential calculations, decimal input, input cleanup, result formatting,
-deletion, clearing, and division-by-zero handling.
+deletion, clearing, positive/negative input, keyboard controls, and
+division-by-zero handling.
 
-The remaining work focuses on keyboard support and implementing the percentage
-and positive/negative controls.
-```
+The remaining work focuses on implementing the percentage function.
