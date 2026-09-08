@@ -1,15 +1,17 @@
+```md
 # Calculator
 
 A browser-based calculator created as part of
 [The Odin Project Foundations course](https://www.theodinproject.com/lessons/foundations-calculator).
 
 The project combines JavaScript fundamentals with DOM manipulation, event
-handling, state management, and a calculator-style user interface.
+handling, state management, input validation, and a calculator-style user
+interface.
 
 ## Assignment
 
-Build an on-screen calculator that performs basic arithmetic operations and
-handles calculations through an interactive user interface.
+Build an on-screen calculator that performs basic arithmetic operations through
+an interactive user interface.
 
 The calculator should:
 
@@ -24,26 +26,31 @@ The calculator should:
 7. Handle common calculator edge cases such as decimal input and division by
    zero.
 
-## Current Features
+## Features
 
 - Number input from `0` to `9`
 - Addition, subtraction, multiplication, and division
 - Central calculation state stored in a JavaScript object
 - An `operate()` function that selects the correct arithmetic operation
-- Separate storage for the first operand, second operand, operator, and result
+- Separate storage for both operands, the operator, and the current result
 - Live display updates while entering calculations
-- A secondary display row that shows the previous operation
-- Sequential calculations without pressing equals between every operation
-- Previous results can be used as the first operand of a new calculation
-- Entering a number after displaying a result starts a new calculation
+- A secondary display row for the previous operation
+- Sequential calculations without requiring `=` between every operation
+- Continued calculations using the previous result as the next first operand
+- Starting a new calculation by entering a number after a completed result
 - Decimal number input
+- Automatic insertion of a leading zero when entering values such as `.5`
 - Prevention of multiple decimal points within the same operand
+- Removal of unused trailing decimal points before calculations
+- Removal of unnecessary leading zeros
 - Formatting of long decimal results
-- Scientific notation for results greater than or equal to `1e9`
-- Error handling for division by zero
-- `AC` button to reset the complete calculation
-- Automatic display scrolling for long values
-- Styled error messages
+- Scientific notation for large results
+- Division-by-zero error handling
+- `AC` button for resetting the complete calculator state
+- `DEL` button for deleting the most recent number or operator input
+- Protection against editing a completed result with `DEL`
+- Automatic display scrolling for long calculations
+- Separate styling for current calculations, previous operations, and errors
 - Calculator interface built with CSS and Flexbox
 
 ## Calculation Flow
@@ -57,6 +64,17 @@ The calculator should:
 6. Selecting a number after a completed calculation clears the previous state
    and starts a new calculation.
 
+## Input Handling
+
+The calculator cleans user input before performing calculations.
+
+- Leading zeros are removed when they are not required.
+- Decimal input beginning with `.` is automatically converted to `0.`.
+- Only one decimal point is allowed per operand.
+- A trailing decimal point is removed before an operation is evaluated.
+- The `DEL` button removes the latest part of the current input.
+- Completed results are locked to prevent accidental deletion.
+
 ## Result Formatting
 
 Results are formatted to keep long numbers readable within the calculator
@@ -66,15 +84,20 @@ display.
 - Results greater than or equal to `1e9` are displayed using scientific
   notation.
 
-## Planned Features
+## Error Handling
 
-- Implement the `DEL` button
-- Implement the percentage button
-- Implement the positive/negative button
-- Add keyboard support
-- Allow an entered operator to be replaced before entering the second operand
-- Improve handling of `0` as the second operand for non-division operations
-- Continue refining calculator edge cases
+Division by zero is detected before the calculation is performed.
+
+If a division-by-zero operation is attempted, the calculator displays an error
+message and resets the stored operands and operator.
+
+## Remaining Features
+
+Before completing the project, the following features still need to be added:
+
+- Keyboard support
+- Positive/negative (`±`) button functionality
+- Percentage (`%`) button functionality
 
 ## Built With
 
@@ -88,7 +111,10 @@ display.
 
 Work in progress.
 
-The main calculator logic is functional and supports basic arithmetic,
-sequential calculations, decimal input, result formatting, clearing the
-calculator, and division-by-zero error handling. The remaining work focuses on
-the additional calculator controls, keyboard support, and smaller edge cases.
+The core calculator functionality is complete, including arithmetic operations,
+sequential calculations, decimal input, input cleanup, result formatting,
+deletion, clearing, and division-by-zero handling.
+
+The remaining work focuses on keyboard support and implementing the percentage
+and positive/negative controls.
+```

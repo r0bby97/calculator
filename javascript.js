@@ -1,6 +1,5 @@
 const displayTextActive = document.querySelector("#activeRow");
 const displayTextOlder = document.querySelector("#olderRow");
-const numButtons = document.querySelectorAll("button.num");
 const allButtons = document.querySelectorAll("button");
 
 const calculation = {
@@ -10,32 +9,25 @@ const calculation = {
   currentUserInput: "",
   currentResult: "",
   resultDisplayed: false,
+  resultLocked: false,
 };
 
-function getNum1(event) {
-  const countDecimals = calculation.firstNumber.split(".").length - 1;
+function getNum(event, num) {
+  const countDecimals = calculation[num].split(".").length - 1;
   if (
     countDecimals === 0 &&
     event.target.id === "dot" &&
-    calculation.firstNumber.charAt(0) !== "."
+    calculation[num].length === 0
   ) {
-    calculation.firstNumber += event.target.value;
-  } else if (event.target.classList.contains("num")) {
-    calculation.firstNumber += event.target.value;
-  }
-  displayTextActive.textContent = createDisplayString();
-}
-
-function getNum2(event) {
-  const countDecimals = calculation.secondNumber.split(".").length - 1;
-  if (
+    calculation[num] += `0${event.target.value}`;
+  } else if (
     countDecimals === 0 &&
     event.target.id === "dot" &&
-    calculation.secondNumber.charAt(0) !== "."
+    calculation[num].length > 0
   ) {
-    calculation.secondNumber += event.target.value;
+    calculation[num] += event.target.value;
   } else if (event.target.classList.contains("num")) {
-    calculation.secondNumber += event.target.value;
+    calculation[num] += event.target.value;
   }
   displayTextActive.textContent = createDisplayString();
 }
@@ -48,6 +40,9 @@ function checkOperator(event) {
     event.target.id === "divide";
 
   if (calculation.operator === null && isOperator) {
+    calculation.firstNumber = removeLeadingZeros(
+      removeUnusedDot(calculation.firstNumber),
+    );
     calculation.operator = event.target.value;
     if (calculation.resultDisplayed) {
       calculation.resultDisplayed = false;
@@ -62,51 +57,62 @@ function checkSecondOperator(event) {
     event.target.id === "subtract" ||
     event.target.id === "multiply" ||
     event.target.id === "divide";
+  const isDivisionByZero =
+    calculation.operator === "÷" && Number(calculation.secondNumber) === 0;
 
-  if (calculation.operator !== null && calculation.secondNumber !== "") {
-    if (calculation.secondNumber !== "0" && isOperator) {
-      displayTextOlder.textContent = createDisplayString();
-      calculation.currentResult = operate();
-      calculation.firstNumber = String(calculation.currentResult);
-      calculation.secondNumber = "";
-      calculation.operator = event.target.value;
-      displayTextActive.textContent = createDisplayString();
-      calculation.resultDisplayed = false;
-    } else if (
-      calculation.secondNumber === "0" &&
-      calculation.operator === "÷" &&
-      isOperator
-    ) {
-      toggleErrorMessage(displayTextActive);
-      calculation.resultDisplayed = false;
-    }
+  if (
+    !isOperator ||
+    calculation.operator === null ||
+    calculation.secondNumber === ""
+  ) {
+    return;
   }
+  calculation.secondNumber = removeLeadingZeros(
+    removeUnusedDot(calculation.secondNumber),
+  );
+  if (isDivisionByZero) {
+    toggleErrorMessage(displayTextActive);
+    calculation.resultDisplayed = true;
+    return;
+  }
+  displayTextOlder.textContent = createDisplayString();
+  calculation.currentResult = operate();
+  calculation.firstNumber = String(calculation.currentResult);
+  calculation.resultLocked = true;
+  calculation.secondNumber = "";
+  calculation.operator = event.target.value;
+  calculation.resultDisplayed = false;
+  displayTextActive.textContent = createDisplayString();
 }
 
 function checkEqual(event) {
+  const isDivisionByZero =
+    calculation.operator === "÷" && Number(calculation.secondNumber) === 0;
+
   if (
-    event.target.id === "equals" &&
-    calculation.firstNumber !== "" &&
-    calculation.secondNumber !== "" &&
-    calculation.secondNumber !== "0" &&
-    calculation.operator !== null
+    event.target.id !== "equals" ||
+    calculation.firstNumber === "" ||
+    calculation.secondNumber === "" ||
+    calculation.operator === null
   ) {
-    calculation.currentResult = operate();
-    displayTextOlder.textContent = createDisplayString();
-    displayTextActive.textContent = formatResult(calculation.currentResult);
-    calculation.firstNumber = String(calculation.currentResult);
-    calculation.secondNumber = "";
-    calculation.operator = null;
-    calculation.resultDisplayed = true;
-  } else if (
-    event.target.id === "equals" &&
-    calculation.firstNumber !== "" &&
-    calculation.secondNumber === "0" &&
-    calculation.operator !== null
-  ) {
+    return;
+  }
+  calculation.secondNumber = removeLeadingZeros(
+    removeUnusedDot(calculation.secondNumber),
+  );
+  if (isDivisionByZero) {
     toggleErrorMessage(displayTextActive);
     calculation.resultDisplayed = true;
+    return;
   }
+  calculation.currentResult = operate();
+  displayTextOlder.textContent = createDisplayString();
+  displayTextActive.textContent = formatResult(calculation.currentResult);
+  calculation.firstNumber = String(calculation.currentResult);
+  calculation.secondNumber = "";
+  calculation.operator = null;
+  calculation.resultDisplayed = true;
+  calculation.resultLocked = true;
 }
 
 function toggleErrorMessage(element) {
@@ -116,15 +122,13 @@ function toggleErrorMessage(element) {
     calculation.firstNumber = "";
     calculation.secondNumber = "";
     calculation.operator = null;
+    calculation.resultLocked = false;
   }
 }
 
 function operate() {
   const num1 = parseFloat(calculation.firstNumber);
   const num2 = parseFloat(calculation.secondNumber);
-  console.log(
-    `num1: ${num1} num2: ${num2} typeof(num1): ${typeof num1} typeof(num2): ${typeof num2}`,
-  );
   const operator = calculation.operator;
   switch (operator) {
     case "+":
@@ -139,12 +143,32 @@ function operate() {
 }
 
 function formatResult(value) {
-   return Math.abs(value) >= 1e9
-    ? value.toExponential(8)
-    : value.toLocaleString("en-US", {
-        useGrouping: false,
-        maximumFractionDigits: 10,
-      });
+  if (Math.abs(value) >= 1e9) {
+    return value.toExponential(8);
+  } else {
+    return value.toLocaleString("en-US", {
+      useGrouping: false,
+      maximumFractionDigits: 10,
+    });
+  }
+}
+
+function removeUnusedDot(numString) {
+  if (numString.endsWith(".")) {
+    return numString.slice(0, -1);
+  }
+  return numString;
+}
+
+function removeLeadingZeros(numString) {
+  while (
+    numString.length > 1 &&
+    numString.charAt(0) === "0" &&
+    numString.charAt(1) !== "."
+  ) {
+    numString = numString.slice(1);
+  }
+  return numString;
 }
 
 function add(num1, num2) {
@@ -169,8 +193,29 @@ function checkAC(event) {
   }
 }
 
+function checkBackspace(event) {
+  if (event.target.id !== "delete") {
+    return;
+  }
+
+  if (calculation.resultLocked && calculation.operator === null) {
+    return;
+  }
+
+  if (calculation.operator !== null && calculation.secondNumber !== "") {
+    calculation.secondNumber = calculation.secondNumber.slice(0, -1);
+  } else if (calculation.operator !== null) {
+    calculation.operator = null;
+  } else if (!calculation.resultLocked) {
+    calculation.firstNumber = calculation.firstNumber.slice(0, -1);
+  }
+
+  displayTextActive.textContent = createDisplayString();
+}
+
 function clearAll() {
   calculation.resultDisplayed = false;
+  calculation.resultLocked = false;
   calculation.firstNumber = "";
   calculation.secondNumber = "";
   calculation.operator = null;
@@ -192,18 +237,19 @@ allButtons.forEach((button) => {
     if (event.target.classList.contains("num") || event.target.id === "dot") {
       if (!calculation.resultDisplayed) {
         if (calculation.operator === null) {
-          getNum1(event);
+          getNum(event, "firstNumber");
         } else {
-          getNum2(event);
+          getNum(event, "secondNumber");
         }
       } else {
         clearAll();
-        getNum1(event);
+        getNum(event, "firstNumber");
       }
     }
     checkEqual(event);
     checkSecondOperator(event);
     checkAC(event);
+    checkBackspace(event);
 
     displayTextActive.scrollLeft = displayTextActive.scrollWidth;
     displayTextOlder.scrollTop = displayTextOlder.scrollHeight;
