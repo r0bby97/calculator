@@ -1,143 +1,115 @@
 # Calculator
 
-A browser-based calculator created as part of
-[The Odin Project Foundations course](https://www.theodinproject.com/lessons/foundations-calculator).
+A browser-based calculator built as part of [The Odin Project](https://www.theodinproject.com/lessons/foundations-calculator) Foundations curriculum.
 
-The project combines JavaScript fundamentals with DOM manipulation, event
-handling, state management, input validation, keyboard interaction, and a
-calculator-style user interface.
-
-## Assignment
-
-Build an on-screen calculator that performs basic arithmetic operations through
-an interactive user interface.
-
-The calculator should:
-
-1. Provide separate functions for addition, subtraction, multiplication, and
-   division.
-2. Store the first number, selected operator, and second number.
-3. Use an `operate()` function to execute the selected arithmetic operation.
-4. Update the display as numbers and operators are entered.
-5. Calculate and display results when the equals button is selected.
-6. Support sequential calculations by using the previous result in the next
-   operation.
-7. Handle common calculator edge cases such as decimal input and division by
-   zero.
+The project combines arithmetic operations with decimal input, percentage calculations, keyboard controls, chained calculations, input cleanup, and error handling. It was built with plain HTML, CSS, and JavaScript.
 
 ## Features
 
-- Number input from `0` to `9`
 - Addition, subtraction, multiplication, and division
-- Central calculation state stored in a JavaScript object
-- An `operate()` function that selects the correct arithmetic operation
-- Separate storage for both operands, the operator, and the current result
-- Live display updates while entering calculations
-- A secondary display row for the previous operation
-- Sequential calculations without requiring `=` between every operation
-- Continued calculations using the previous result as the next first operand
-- Starting a new calculation by entering a number after a completed result
-- Decimal number input
-- Automatic insertion of a leading zero when entering values such as `.5`
-- Prevention of multiple decimal points within the same operand
-- Removal of unused trailing decimal points before calculations
-- Removal of unnecessary leading zeros
-- Formatting of long decimal results
-- Scientific notation for large results
-- Division-by-zero error handling
-- `AC` button for resetting the complete calculator state
-- `DEL` button for deleting the most recent number or operator input
-- Protection against editing a completed result with `DEL`
-- Positive/negative (`±`) button for switching the sign of the current number
-- Keyboard support for calculator input
-- Automatic display scrolling for long calculations
-- Separate styling for current calculations, previous operations, and errors
-- Custom calculator favicon
-- Calculator interface built with CSS and Flexbox
+- Chained calculations without pressing the equals button first
+- Replacement of an operator before the second number is entered
+- Decimal input with protection against multiple decimal points
+- Percentage calculations based on the selected operator
+- Positive and negative number toggle
+- Backspace and all-clear controls
+- Keyboard support
+- Input limited to 15 digits to reduce precision problems
+- Automatic removal of unnecessary leading and trailing zeros
+- Large and very small results displayed in scientific notation
+- Rounded display output with up to 10 decimal places
+- Protection against division by zero and non-finite results
+- Separate displays for the current calculation and previous expression
 
-## Calculation Flow
+## Percentage behavior
 
-1. Number buttons build the first operand.
-2. Selecting an operator stores the requested arithmetic operation.
-3. Further number input builds the second operand.
-4. Selecting `=` evaluates the current operation and displays the result.
-5. Selecting another operator after entering the second operand evaluates the
-   current operation first and continues with its result.
-6. Selecting a number after a completed calculation clears the previous state
-   and starts a new calculation.
-7. The positive/negative button changes the sign of the currently active
-   operand.
+The percentage button behaves similarly to a traditional calculator when it is used for the second number:
 
-## Input Handling
+| Calculation | Result | Behavior |
+| --- | ---: | --- |
+| `200 + 10%` | `220` | Adds 10% of 200 |
+| `200 - 10%` | `180` | Subtracts 10% of 200 |
+| `200 × 10%` | `20` | Multiplies by 0.10 |
+| `200 ÷ 10%` | `2000` | Divides by 0.10 |
 
-The calculator cleans user input before performing calculations.
+When the first number contains a percent sign, it is converted directly into its decimal factor. For example, `10% × 200` becomes `0.10 × 200`.
 
-- Leading zeros are removed when they are not required.
-- Decimal input beginning with `.` is automatically converted to `0.`.
-- Only one decimal point is allowed per operand.
-- A trailing decimal point is removed before an operation is evaluated.
-- The `DEL` button removes the latest part of the current input.
-- Completed results are locked to prevent accidental deletion.
-- The `±` button switches the sign of the current operand.
+## Controls
 
-## Keyboard Controls
+The calculator can be controlled with the buttons on the page or with a keyboard.
 
-The calculator can also be controlled with the keyboard.
-
-| Key | Action |
+| Action | Keyboard input |
 | --- | --- |
-| `0` – `9` | Enter numbers |
-| `.` | Decimal point |
-| `+` | Addition |
-| `-` | Subtraction |
-| `*` | Multiplication |
-| `/` | Division |
-| `=` | Calculate result |
-| `Backspace` | Delete last input |
-| `Delete` | Clear calculator |
-| `F9` | Toggle positive/negative |
+| Enter a number | `0`–`9` |
+| Add | `+` |
+| Subtract | `-` |
+| Multiply | `*` |
+| Divide | `/` |
+| Add a decimal point | `.` |
+| Apply a percentage | `%` |
+| Calculate the result | `Enter` or `=` |
+| Delete the last input | `Backspace` |
+| Clear the calculator | `Delete` |
+| Toggle the sign | `F9` |
 
-## Result Formatting
-
-Results are formatted to keep long numbers readable within the calculator
-display.
-
-- Decimal results are limited to a maximum of 10 fractional digits.
-- Results greater than or equal to `1e9` are displayed using scientific
-  notation.
-
-## Error Handling
-
-Division by zero is detected before the calculation is performed.
-
-If a division-by-zero operation is attempted, the calculator displays an error
-message and resets the stored operands and operator.
-
-## Remaining Features
-
-Before completing the project, the following feature still needs to be added:
-
-- Percentage (`%`) button functionality
-
-## Built With
+## Built with
 
 - HTML5
 - CSS3
 - JavaScript
-- DOM manipulation
-- Flexbox
+- DOM manipulation and event listeners
+- Git and GitHub
+
+## How it works
+
+The current calculation is stored in a central state object containing the first number, second number, selected operator, current result, and display state.
+
+Numbers remain strings while the user is entering them. This makes it possible to preserve values such as `0.`, remove individual characters, append a percent sign, and clean up unused zeros before calculating. The values are converted into numbers only when an operation is performed.
+
+Results remain unformatted internally so they can be used in later calculations without losing additional precision. Formatting is applied only when a value is shown on the display.
+
+## Error handling
+
+The calculator displays an error message and resets its calculation state when:
+
+- A number is divided by zero
+- A calculation produces `Infinity`, `-Infinity`, or `NaN`
+
+## Run locally
+
+1. Download or clone the repository.
+2. Open the project folder.
+3. Open `index.html` in a browser.
+
+For development, the project can also be opened with a local development server such as the VS Code Live Server extension.
+
+## Project structure
+
+```text
+.
+├── index.html
+├── style.css
+├── javascript.js
+└── README.md
+```
+
+## What I learned
+
+This project helped me practise:
+
+- Separating user input, calculation logic, and display output
+- Managing application state across multiple button presses
+- Working with DOM events from both mouse and keyboard input
+- Handling floating-point formatting and JavaScript number limits
+- Cleaning and validating string-based number input
+- Breaking a larger problem into smaller reusable functions
+- Testing edge cases such as division by zero, percentages, decimals, and long inputs
 
 ## Credits
 
-- Calculator favicon provided by [Icons8](https://icons8.com/)
+- Project specification: [The Odin Project – Calculator](https://www.theodinproject.com/lessons/foundations-calculator)
+- Calculator favicon: [Icons8](https://icons8.com/icon/qrOXrfUDKkOX/calculator)
 
-## Project Status
+## License
 
-Work in progress.
-
-The main calculator functionality is complete, including arithmetic operations,
-sequential calculations, decimal input, input cleanup, result formatting,
-deletion, clearing, positive/negative input, keyboard controls, and
-division-by-zero handling.
-
-The remaining work focuses on implementing the percentage function.
+This project was created for educational purposes.

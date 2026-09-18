@@ -6,7 +6,6 @@ const calculation = {
   firstNumber: "",
   secondNumber: "",
   operator: null,
-  currentUserInput: "",
   currentResult: "",
   resultDisplayed: false,
   resultLocked: false,
@@ -14,6 +13,12 @@ const calculation = {
 
 function getNum(event, num) {
   const countDecimals = calculation[num].split(".").length - 1;
+  const digitCount = calculation[num].replace(/\D/g, "").length;
+
+  if (calculation[num].includes("%")) {
+    return;
+  }
+
   if (
     countDecimals === 0 &&
     event.target.id === "dot" &&
@@ -26,9 +31,13 @@ function getNum(event, num) {
     calculation[num].length > 0
   ) {
     calculation[num] += event.target.value;
-  } else if (event.target.classList.contains("num")) {
+  } else if (
+    event.target.classList.contains("num") &&
+    digitCount < 15
+  ) {
     calculation[num] += event.target.value;
   }
+
   displayTextActive.textContent = createDisplayString();
 }
 
@@ -39,16 +48,31 @@ function checkOperator(event) {
     event.target.id === "multiply" ||
     event.target.id === "divide";
 
-  if (calculation.operator === null && isOperator) {
-    calculation.firstNumber = removeLeadingZeros(
-      removeUnusedDot(calculation.firstNumber),
-    );
-    calculation.operator = event.target.value;
-    if (calculation.resultDisplayed) {
-      calculation.resultDisplayed = false;
-    }
-    displayTextActive.textContent = createDisplayString();
+  if (!isOperator || calculation.firstNumber === "") {
+    return;
   }
+
+  if (calculation.operator !== null && calculation.secondNumber === "") {
+    calculation.operator = event.target.value;
+    displayTextActive.textContent = createDisplayString();
+    return;
+  }
+
+  if (calculation.operator !== null) {
+    return;
+  }
+
+  calculation.firstNumber = removeLeadingZeros(
+    removeUnusedDot(removeUnusedZero(calculation.firstNumber)),
+  );
+
+  calculation.operator = event.target.value;
+
+  if (calculation.resultDisplayed) {
+    calculation.resultDisplayed = false;
+  }
+
+  displayTextActive.textContent = createDisplayString();
 }
 
 function checkSecondOperator(event) {
@@ -57,8 +81,6 @@ function checkSecondOperator(event) {
     event.target.id === "subtract" ||
     event.target.id === "multiply" ||
     event.target.id === "divide";
-  const isDivisionByZero =
-    calculation.operator === "÷" && Number(calculation.secondNumber) === 0;
 
   if (
     !isOperator ||
@@ -67,28 +89,39 @@ function checkSecondOperator(event) {
   ) {
     return;
   }
+
   calculation.secondNumber = removeLeadingZeros(
-    removeUnusedDot(calculation.secondNumber),
+    removeUnusedDot(removeUnusedZero(calculation.secondNumber)),
   );
+
+  const isDivisionByZero =
+    calculation.operator === "÷" &&
+    (calculation.secondNumber === "0" || calculation.secondNumber === "0%");
+
   if (isDivisionByZero) {
-    toggleErrorMessage(displayTextActive);
-    calculation.resultDisplayed = true;
+    showErrorMessage(displayTextActive);
     return;
   }
+
   displayTextOlder.textContent = createDisplayString();
+
   calculation.currentResult = operate();
+
+  if (!Number.isFinite(calculation.currentResult)) {
+    showErrorMessage(displayTextActive);
+    return;
+  }
+
   calculation.firstNumber = String(calculation.currentResult);
-  calculation.resultLocked = true;
   calculation.secondNumber = "";
   calculation.operator = event.target.value;
   calculation.resultDisplayed = false;
-  displayTextActive.textContent = createDisplayString();
+  calculation.resultLocked = true;
+
+  displayTextActive.textContent = `${formatResult(calculation.currentResult)}${calculation.operator}`;
 }
 
 function checkEqual(event) {
-  const isDivisionByZero =
-    calculation.operator === "÷" && Number(calculation.secondNumber) === 0;
-
   if (
     event.target.id !== "equals" ||
     calculation.firstNumber === "" ||
@@ -97,17 +130,31 @@ function checkEqual(event) {
   ) {
     return;
   }
+
   calculation.secondNumber = removeLeadingZeros(
-    removeUnusedDot(calculation.secondNumber),
+    removeUnusedDot(removeUnusedZero(calculation.secondNumber)),
   );
+
+  const isDivisionByZero =
+    calculation.operator === "÷" &&
+    (calculation.secondNumber === "0" || calculation.secondNumber === "0%");
+
   if (isDivisionByZero) {
-    toggleErrorMessage(displayTextActive);
-    calculation.resultDisplayed = true;
+    showErrorMessage(displayTextActive);
     return;
   }
-  calculation.currentResult = operate();
+
   displayTextOlder.textContent = createDisplayString();
+
+  calculation.currentResult = operate();
+
+  if (!Number.isFinite(calculation.currentResult)) {
+    showErrorMessage(displayTextActive);
+    return;
+  }
+
   displayTextActive.textContent = formatResult(calculation.currentResult);
+
   calculation.firstNumber = String(calculation.currentResult);
   calculation.secondNumber = "";
   calculation.operator = null;
@@ -115,21 +162,46 @@ function checkEqual(event) {
   calculation.resultLocked = true;
 }
 
-function toggleErrorMessage(element) {
-  element.classList.toggle("errorMessage");
-  if (element.classList.contains("errorMessage")) {
-    element.textContent = "ERROR 404 ;)";
-    calculation.firstNumber = "";
-    calculation.secondNumber = "";
-    calculation.operator = null;
-    calculation.resultLocked = false;
-  }
+function showErrorMessage(element) {
+  element.classList.add("errorMessage");
+  element.textContent = "ERROR 404 ;)";
+
+  calculation.firstNumber = "";
+  calculation.secondNumber = "";
+  calculation.operator = null;
+  calculation.currentResult = "";
+  calculation.resultDisplayed = true;
+  calculation.resultLocked = false;
 }
 
 function operate() {
-  const num1 = parseFloat(calculation.firstNumber);
-  const num2 = parseFloat(calculation.secondNumber);
+  let num1 = null;
+  let num2 = null;
+
   const operator = calculation.operator;
+
+  if (calculation.firstNumber.includes("%")) {
+    const stringWithoutPercent = calculation.firstNumber.replace("%", "");
+
+    num1 = parseFloat(stringWithoutPercent) / 100;
+  } else {
+    num1 = parseFloat(calculation.firstNumber);
+  }
+
+  if (calculation.secondNumber.includes("%")) {
+    const stringWithoutPercent = calculation.secondNumber.replace("%", "");
+
+    const decimalPercentage = parseFloat(stringWithoutPercent) / 100;
+
+    if (operator === "+" || operator === "−") {
+      num2 = decimalPercentage * num1;
+    } else {
+      num2 = decimalPercentage;
+    }
+  } else {
+    num2 = parseFloat(calculation.secondNumber);
+  }
+
   switch (operator) {
     case "+":
       return add(num1, num2);
@@ -143,32 +215,90 @@ function operate() {
 }
 
 function formatResult(value) {
-  if (Math.abs(value) >= 1e9) {
+  const absoluteValue = Math.abs(value);
+
+  if (absoluteValue >= 1e9 || (absoluteValue !== 0 && absoluteValue < 1e-10)) {
     return value.toExponential(8);
-  } else {
-    return value.toLocaleString("en-US", {
-      useGrouping: false,
-      maximumFractionDigits: 10,
-    });
   }
+
+  return value.toLocaleString("en-US", {
+    useGrouping: false,
+    maximumFractionDigits: 10,
+  });
 }
 
 function removeUnusedDot(numString) {
   numString = numString.toString();
+
+  if (!numString.includes(".")) {
+    return numString;
+  }
+
   if (numString.endsWith(".")) {
     return numString.slice(0, -1);
   }
+
+  if (
+    numString.charAt(numString.length - 1) === "%" &&
+    numString.charAt(numString.length - 2) === "."
+  ) {
+    numString = numString.slice(0, -2) + numString.slice(-1);
+  }
+
+  return numString;
+}
+
+function removeUnusedZero(numString) {
+  if (!numString.includes(".")) {
+    return numString;
+  }
+
+  while (
+    numString.length > 1 &&
+    numString.charAt(numString.length - 1) === "0"
+  ) {
+    numString = numString.slice(0, -1);
+  }
+
+  while (
+    numString.length > 1 &&
+    numString.charAt(numString.length - 1) === "%" &&
+    numString.charAt(numString.length - 2) === "0"
+  ) {
+    numString = numString.slice(0, -2) + numString.slice(-1);
+  }
+
   return numString;
 }
 
 function removeLeadingZeros(numString) {
+  const isNegative = numString.startsWith("-");
+  const hasPercent = numString.endsWith("%");
+
+  if (isNegative) {
+    numString = numString.slice(1);
+  }
+
+  if (hasPercent) {
+    numString = numString.slice(0, -1);
+  }
+
   while (
     numString.length > 1 &&
-    numString.charAt(0) === "0" &&
+    numString.startsWith("0") &&
     numString.charAt(1) !== "."
   ) {
     numString = numString.slice(1);
   }
+
+  if (isNegative) {
+    numString = `-${numString}`;
+  }
+
+  if (hasPercent) {
+    numString += "%";
+  }
+
   return numString;
 }
 
@@ -198,9 +328,11 @@ function checkBackspace(event) {
   if (event.target.id !== "delete") {
     return;
   }
+
   if (calculation.resultLocked && calculation.operator === null) {
     return;
   }
+
   if (calculation.operator !== null && calculation.secondNumber !== "") {
     calculation.secondNumber = calculation.secondNumber.slice(0, -1);
   } else if (calculation.operator !== null) {
@@ -208,6 +340,7 @@ function checkBackspace(event) {
   } else if (!calculation.resultLocked) {
     calculation.firstNumber = calculation.firstNumber.slice(0, -1);
   }
+
   displayTextActive.textContent = createDisplayString();
 }
 
@@ -215,14 +348,52 @@ function checkPositiveNegative(event) {
   if (event.target.id !== "positiveNegative") {
     return;
   }
+
   if (calculation.secondNumber !== "") {
-    calculation.secondNumber *= -1;
-    displayTextActive.textContent = createDisplayString();
+    if (!calculation.secondNumber.startsWith("-")) {
+      calculation.secondNumber = String("-" + calculation.secondNumber);
+      displayTextActive.textContent = createDisplayString();
+      return;
+    } else {
+      calculation.secondNumber = calculation.secondNumber.replace("-", "");
+      displayTextActive.textContent = createDisplayString();
+      return;
+    }
+  }
+  if (calculation.firstNumber !== "") {
+    if (!calculation.firstNumber.startsWith("-")) {
+      calculation.firstNumber = String("-" + calculation.firstNumber);
+      displayTextActive.textContent = createDisplayString();
+      return;
+    } else {
+      calculation.firstNumber = calculation.firstNumber.replace("-", "");
+      displayTextActive.textContent = createDisplayString();
+      return;
+    }
+  }
+}
+
+function checkPercent(event) {
+  if (event.target.id !== "percent") {
     return;
-  } else if (calculation.firstNumber !== "") {
-    calculation.firstNumber *= -1;
+  }
+
+  if (
+    !calculation.firstNumber.includes("%") &&
+    calculation.firstNumber !== "" &&
+    calculation.operator === null &&
+    calculation.secondNumber === ""
+  ) {
+    calculation.firstNumber += "%";
     displayTextActive.textContent = createDisplayString();
-    return;
+  } else if (
+    !calculation.secondNumber.includes("%") &&
+    calculation.firstNumber !== "" &&
+    calculation.operator !== null &&
+    calculation.secondNumber !== ""
+  ) {
+    calculation.secondNumber += "%";
+    displayTextActive.textContent = createDisplayString();
   }
 }
 
@@ -232,21 +403,35 @@ function clearAll() {
   calculation.firstNumber = "";
   calculation.secondNumber = "";
   calculation.operator = null;
+  calculation.currentResult = "";
+
   displayTextActive.classList.remove("errorMessage");
   displayTextActive.textContent = "";
   displayTextOlder.textContent = "";
 }
 
 function createDisplayString() {
-  const num1 = calculation.firstNumber !== "" ? calculation.firstNumber : "";
+  let num1 = calculation.firstNumber !== "" ? calculation.firstNumber : "";
   const num2 = calculation.secondNumber !== "" ? calculation.secondNumber : "";
   const operator = calculation.operator !== null ? calculation.operator : "";
+
+  if (calculation.resultLocked && num1 !== "") {
+    const hasPercent = num1.endsWith("%");
+    const numberWithoutPercent = hasPercent ? num1.slice(0, -1) : num1;
+    num1 = formatResult(Number(numberWithoutPercent));
+
+    if (hasPercent) {
+      num1 += "%";
+    }
+  }
+
   return `${num1}${operator}${num2}`;
 }
 
 allButtons.forEach((button) => {
   button.addEventListener("click", (event) => {
     checkOperator(event);
+
     if (event.target.classList.contains("num") || event.target.id === "dot") {
       if (!calculation.resultDisplayed) {
         if (calculation.operator === null) {
@@ -259,11 +444,14 @@ allButtons.forEach((button) => {
         getNum(event, "firstNumber");
       }
     }
+
     checkEqual(event);
     checkSecondOperator(event);
     checkAC(event);
     checkBackspace(event);
     checkPositiveNegative(event);
+    checkPercent(event);
+
     displayTextActive.scrollLeft = displayTextActive.scrollWidth;
     displayTextOlder.scrollTop = displayTextOlder.scrollHeight;
   });
@@ -271,6 +459,7 @@ allButtons.forEach((button) => {
 
 document.addEventListener("keydown", (event) => {
   const key = event.key;
+
   switch (key) {
     case "0":
       document.getElementById("zero").click();
@@ -321,6 +510,9 @@ document.addEventListener("keydown", (event) => {
       document.getElementById("percent").click();
       break;
     case "=":
+      document.getElementById("equals").click();
+      break;
+    case "Enter":
       document.getElementById("equals").click();
       break;
     case "Backspace":
