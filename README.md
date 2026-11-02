@@ -1,8 +1,14 @@
 # Calculator
 
+[View the live demo](https://r0bby97.github.io/calculator/)
+
 A browser-based calculator built as part of [The Odin Project](https://www.theodinproject.com/lessons/foundations-calculator) Foundations curriculum.
 
 The project combines arithmetic operations with decimal input, percentage calculations, keyboard controls, chained calculations, input cleanup, and error handling. It was built with plain HTML, CSS, and JavaScript.
+
+## Preview
+
+![Application preview](docs/preview.png)
 
 ## Features
 
