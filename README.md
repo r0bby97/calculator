@@ -10,7 +10,7 @@ The project combines arithmetic operations with decimal input, percentage calcul
 
 **Problem:** A calculator must handle unfinished input, repeated operators, percentages and invalid arithmetic without losing track of the user's current calculation.
 
-**Approach:** Keep typed numbers as strings, manage calculation state centrally and format results only for display. Mouse and keyboard inputs share the calculation logic. The keypad adapts to narrow screens without removing controls.
+**Approach:** Keep typed numbers as strings, manage calculation state centrally and format results only for display. Mouse and keyboard inputs share the calculation logic.
 
 **Result:** A browser calculator with chained calculations, contextual percentages and explicit arithmetic errors. It uses JavaScript numbers and is not an arbitrary-precision calculator.
 
