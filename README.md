@@ -6,6 +6,15 @@ A browser-based calculator built as part of [The Odin Project](https://www.theod
 
 The project combines arithmetic operations with decimal input, percentage calculations, keyboard controls, chained calculations, input cleanup, and error handling. It was built with plain HTML, CSS, and JavaScript.
 
+## Project overview
+
+**Problem:** A calculator must handle unfinished input, repeated operators, percentages and invalid arithmetic without losing track of the user's current calculation.
+
+**Approach:** Keep typed numbers as strings, manage calculation state centrally and format results only for display. Mouse and keyboard inputs share the calculation logic. The keypad adapts to narrow screens without removing controls.
+
+**Result:** A browser calculator with chained calculations, contextual percentages and explicit arithmetic errors. It uses JavaScript numbers and is not an arbitrary-precision calculator.
+
+
 ## Preview
 
 ![Application preview](docs/preview.png)
@@ -116,6 +125,10 @@ This project helped me practise:
 - Project specification: [The Odin Project – Calculator](https://www.theodinproject.com/lessons/foundations-calculator)
 - Calculator favicon: [Icons8](https://icons8.com/icon/qrOXrfUDKkOX/calculator)
 
-## License
+## Project context
 
 This project was created for educational purposes.
+
+## Feedback and contributions
+
+For a bug report, open a repository issue with steps to reproduce, expected and actual behavior, and your browser or device details. Discuss substantial changes in an issue before opening a pull request. Keep changes focused and describe how you checked them.
